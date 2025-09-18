@@ -127,7 +127,6 @@
         }];
         let currentUser = localStorage.getItem('user') || null;
         let selectedUserId = null;
-        // Les messages sont maintenant uniquement gérés par Firebase
         let currentFilter = 'com1';
 
         function renderLoginArea() {
@@ -230,13 +229,20 @@
         function renderConversationMessages() {
             const messagesDiv = document.getElementById('conversation-messages');
             messagesDiv.innerHTML = '';
+            if (!currentUser || !selectedUserId) return;
             const chatKey = [currentUser, selectedUserId].sort().join('-');
-            const chatMessages = messages[chatKey] || [];
-            chatMessages.forEach(m => {
-                const div = document.createElement('div');
-                div.className = m.sender === currentUser ? 'chat-message chat-message-self' : 'chat-message chat-message-other';
-                div.innerHTML = `<strong>${m.sender === currentUser ? 'Moi' : document.getElementById('conversation-user-name').textContent}</strong><br>${m.text}`;
-                messagesDiv.appendChild(div);
+            // Écoute en temps réel des messages depuis Firebase
+            firebase.database().ref('messages/' + chatKey).off(); // retire les anciens listeners
+            firebase.database().ref('messages/' + chatKey).on('value', function(snapshot) {
+                messagesDiv.innerHTML = '';
+                const chatMessages = snapshot.val() ? Object.values(snapshot.val()) : [];
+                chatMessages.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = m.sender === currentUser ? 'chat-message chat-message-self' : 'chat-message chat-message-other';
+                    div.innerHTML = `<strong>${m.sender === currentUser ? 'Moi' : document.getElementById('conversation-user-name').textContent}</strong><br>${m.text}`;
+                    messagesDiv.appendChild(div);
+                });
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             });
         }
 
@@ -245,14 +251,18 @@
             const text = input.value.trim();
             if (!text || !selectedUserId) return;
             const chatKey = [currentUser, selectedUserId].sort().join('-');
-            if (!messages[chatKey]) messages[chatKey] = [];
-            messages[chatKey].push({
+            const message = {
                 sender: currentUser,
-                text
+                text,
+                timestamp: Date.now()
+            };
+            // Ajoute le message dans Firebase
+            const newMsgRef = firebase.database().ref('messages/' + chatKey).push();
+            newMsgRef.set(message, function(error) {
+                if (!error) {
+                    input.value = '';
+                }
             });
-            localStorage.setItem('messages', JSON.stringify(messages));
-            input.value = '';
-            renderConversationMessages();
         }
 
         function backToHome() {
