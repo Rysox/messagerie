@@ -1,3 +1,5 @@
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
     var firebaseConfig = {
         apiKey: "AIzaSyAiod4GXLIcuHavAhW3tNPP7e_HGFUOLSg",
@@ -9,12 +11,7 @@
         measurementId: "G-JL7CGWD4KP"
     };
     firebase.initializeApp(firebaseConfig);
-    var db = firebase.database();
 </script>
-
-<!-- Ajout Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Triple M</title>
 
@@ -130,7 +127,7 @@
         }];
         let currentUser = localStorage.getItem('user') || null;
         let selectedUserId = null;
-        let messages = JSON.parse(localStorage.getItem('messages') || '{}');
+        // Les messages sont maintenant uniquement gérés par Firebase
         let currentFilter = 'com1';
 
         function renderLoginArea() {
@@ -307,5 +304,4 @@
                 renderUserList(true, true);
             }
         });
-
     </script>
