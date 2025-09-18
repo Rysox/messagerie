@@ -5,12 +5,17 @@
         apiKey: "AIzaSyAiod4GXLIcuHavAhW3tNPP7e_HGFUOLSg",
         authDomain: "messagerie-4d154.firebaseapp.com",
         projectId: "messagerie-4d154",
-        storageBucket: "messagerie-4d154.appspot.com", // Correction ici
+        storageBucket: "messagerie-4d154.appspot.com",
         messagingSenderId: "419456922871",
         appId: "1:419456922871:web:c6d25a7dd059ee18a38ff2",
         measurementId: "G-JL7CGWD4KP"
     };
-    firebase.initializeApp(firebaseConfig);
+    try {
+        firebase.initializeApp(firebaseConfig);
+    } catch (e) {
+        alert('Erreur Firebase : ' + e.message);
+        console.error('Erreur Firebase :', e);
+    }
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Triple M</title>
@@ -270,7 +275,8 @@
                 if (!error) {
                     input.value = '';
                 } else {
-                    alert('Erreur lors de l\'envoi du message.');
+                    alert('Erreur lors de l\'envoi du message : ' + error.message);
+                    console.error('Erreur Firebase lors de l\'envoi :', error);
                 }
             });
         }
