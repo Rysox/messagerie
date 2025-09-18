@@ -1,0 +1,293 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triple M</title>
+
+<link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <h1 class="site-title">Triple M</h1>
+    <div class="container" id="main-container">
+        <div class="user-list-container">
+            <h2>Liste des utilisateurs</h2>
+            <div id="status-connexion" style="margin-bottom:1rem;color:#1565c0;font-weight:bold;"></div>
+            <div class="filter-btn-group">
+                <button class="main-btn" id="btn-com1">com 1</button>
+                <button class="main-btn" id="btn-com2">com 2</button>
+                <button class="main-btn" id="btn-prof">Professeur</button>
+                <button class="main-btn" id="btn-conseil">Conseillère</button>
+            </div>
+            <ul id="user-list" class="user-list"></ul>
+        </div>
+    </div>
+    <div id="conversation-page" class="conversation-page" style="display:none;">
+        <div class="conversation-header">
+            <span id="conversation-user-name" class="conversation-user-name"></span>
+            <button id="back-to-home" class="main-btn" style="float:right;">Accueil</button>
+        </div>
+        <div id="conversation-messages" class="conversation-messages"></div>
+        <div class="chat-input-group">
+            <input type="text" id="conversation-input" placeholder="Votre message..." />
+            <button id="conversation-send-btn" class="main-btn">Envoyer</button>
+        </div>
+    </div>
+    <div id="login-area" style="position:absolute;top:20px;right:40px;"></div>
+    <script>
+        // Utilisateurs fictifs pour la démo
+        const users = [{
+            id: 'matheo.P',
+            name: 'Mathéo.P',
+            role: 'Élève',
+            classe: 'Com 1',
+            login: 'matheo.P',
+            password: 'saucisse456'
+        }, {
+            id: 'maxime.L',
+            name: 'Maxime.L',
+            role: 'Élève',
+            classe: 'Com 1',
+            login: 'maxime.L',
+            password: 'saucisse789'
+        }, {
+            id: 'clelia.D',
+            name: 'Clelia.D',
+            role: 'Professeur',
+            classe: null,
+            login: 'clelia.D',
+            password: 'saucisse123'
+        }, {
+            id: 'alice',
+            name: 'Alice',
+            role: 'Élève',
+            classe: 'Com 1',
+            login: 'alice',
+            password: 'passalice'
+        }, {
+            id: 'bob',
+            name: 'Bob',
+            role: 'Élève',
+            classe: 'Com 1',
+            login: 'bob',
+            password: 'passbob'
+        }, {
+            id: 'charlie',
+            name: 'Charlie',
+            role: 'Élève',
+            classe: 'Com 2',
+            login: 'charlie',
+            password: 'passcharlie'
+        }, {
+            id: 'diane',
+            name: 'Diane',
+            role: 'Élève',
+            classe: 'Com 2',
+            login: 'diane',
+            password: 'passdiane'
+        }, {
+            id: 'martin',
+            name: 'Mme Martin',
+            role: 'Professeur',
+            classe: null,
+            login: 'martin',
+            password: 'passmartin'
+        }, {
+            id: 'durand',
+            name: 'M. Durand',
+            role: 'Professeur',
+            classe: null,
+            login: 'durand',
+            password: 'passdurand'
+        }, {
+            id: 'dubois',
+            name: 'Mme Dubois',
+            role: 'Conseillère',
+            classe: null,
+            login: 'dubois',
+            password: 'passdubois'
+        }, {
+            id: 'leroy',
+            name: 'M. Leroy',
+            role: 'Conseillère',
+            classe: null,
+            login: 'leroy',
+            password: 'passleroy'
+        }];
+        let currentUser = localStorage.getItem('user') || null;
+        let selectedUserId = null;
+        let messages = JSON.parse(localStorage.getItem('messages') || '{}');
+        let currentFilter = 'com1';
+
+        function renderLoginArea() {
+            var loginArea = document.getElementById('login-area');
+            loginArea.innerHTML = '';
+            if (currentUser) {
+                var userObj = users.find(u => u.id === currentUser);
+                var shortUser = userObj ? userObj.name[0] + userObj.name[userObj.name.length - 1] : currentUser;
+                loginArea.innerHTML = '<div class="user-info" id="user-abbr" style="cursor:pointer;">' + shortUser + '</div>' +
+                    '<div id="user-menu" style="display:none;position:absolute;top:50px;right:0;background:#fff;border:1px solid #2196f3;border-radius:10px;box-shadow:0 2px 8px rgba(33,150,243,0.15);padding:1rem;min-width:180px;z-index:1001;">' +
+                    '<div style="color:#1565c0;font-weight:bold;margin-bottom:1rem;">Identifiant : ' + (userObj ? userObj.name : currentUser) + '</div>' +
+                    '<button id="logout-btn" class="main-btn" style="width:100%;">Se déconnecter</button>' +
+                    '</div>';
+                var abbr = document.getElementById('user-abbr');
+                var menu = document.getElementById('user-menu');
+                abbr.onclick = function(e) {
+                    e.stopPropagation();
+                    menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
+                };
+                menu.onclick = function(e) {
+                    e.stopPropagation();
+                };
+                document.body.onclick = function(e) {
+                    if (!abbr.contains(e.target) && !menu.contains(e.target)) {
+                        menu.style.display = 'none';
+                    }
+                };
+                document.getElementById('logout-btn').onclick = function(e) {
+                    e.stopPropagation();
+                    localStorage.removeItem('user');
+                    currentUser = null;
+                    selectedUserId = null;
+                    renderLoginArea();
+                    renderUserList(false);
+                };
+            } else {
+                loginArea.innerHTML = '<button id="login-btn" class="main-btn">Se connecter</button>';
+                document.getElementById('login-btn').onclick = function() {
+                    window.open('login.html', '_blank', 'width=400,height=500');
+                };
+                document.body.onclick = null;
+            }
+        }
+
+        function renderUserList(show = false, auto = false) {
+            const userList = document.getElementById('user-list');
+            const statusConnexion = document.getElementById('status-connexion');
+            currentUser = localStorage.getItem('user') || null;
+            if (!currentUser) {
+                userList.style.display = 'none';
+                userList.innerHTML = '';
+                statusConnexion.textContent = 'Non connecté. Veuillez vous connecter.';
+                return;
+            }
+            const userObj = users.find(u => u.id === currentUser);
+            statusConnexion.textContent = userObj ? `Connecté en tant que : ${userObj.name}` : 'Connecté';
+            userList.style.display = 'block';
+            userList.innerHTML = '';
+            let filtered = [];
+            if (auto) {
+                if (userObj) {
+                    if (userObj.classe === 'Com 1') currentFilter = 'com1';
+                    else if (userObj.classe === 'Com 2') currentFilter = 'com2';
+                    else if (userObj.role === 'Professeur') currentFilter = 'prof';
+                    else if (userObj.role === 'Conseillère') currentFilter = 'conseil';
+                }
+            }
+            if (currentFilter === 'com1') {
+                filtered = users.filter(u => u.classe === 'Com 1' && u.id !== currentUser);
+            } else if (currentFilter === 'com2') {
+                filtered = users.filter(u => u.classe === 'Com 2' && u.id !== currentUser);
+            } else if (currentFilter === 'prof') {
+                filtered = users.filter(u => u.role === 'Professeur' && u.id !== currentUser);
+            } else if (currentFilter === 'conseil') {
+                filtered = users.filter(u => u.role === 'Conseillère' && u.id !== currentUser);
+            }
+            if (filtered.length === 0) {
+                userList.innerHTML = '<li style="color:#999;padding:1rem;">Aucun contact dans ce groupe.</li>';
+            } else {
+                filtered.forEach(u => {
+                    const li = document.createElement('li');
+                    li.textContent = `${u.name} (${u.role}${u.classe ? ' - ' + u.classe : ''})`;
+                    li.className = 'user-list-item';
+                    li.onclick = () => {
+                        selectedUserId = u.id;
+                        openConversationPage(u);
+                    };
+                    userList.appendChild(li);
+                });
+            }
+        }
+
+        function openConversationPage(user) {
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('conversation-page').style.display = 'block';
+            document.getElementById('conversation-user-name').textContent = user.name;
+            renderConversationMessages();
+        }
+
+        function renderConversationMessages() {
+            const messagesDiv = document.getElementById('conversation-messages');
+            messagesDiv.innerHTML = '';
+            const chatKey = [currentUser, selectedUserId].sort().join('-');
+            const chatMessages = messages[chatKey] || [];
+            chatMessages.forEach(m => {
+                const div = document.createElement('div');
+                div.className = m.sender === currentUser ? 'chat-message chat-message-self' : 'chat-message chat-message-other';
+                div.innerHTML = `<strong>${m.sender === currentUser ? 'Moi' : document.getElementById('conversation-user-name').textContent}</strong><br>${m.text}`;
+                messagesDiv.appendChild(div);
+            });
+        }
+
+        function sendConversationMessage() {
+            const input = document.getElementById('conversation-input');
+            const text = input.value.trim();
+            if (!text || !selectedUserId) return;
+            const chatKey = [currentUser, selectedUserId].sort().join('-');
+            if (!messages[chatKey]) messages[chatKey] = [];
+            messages[chatKey].push({
+                sender: currentUser,
+                text
+            });
+            localStorage.setItem('messages', JSON.stringify(messages));
+            input.value = '';
+            renderConversationMessages();
+        }
+
+        function backToHome() {
+            document.getElementById('conversation-page').style.display = 'none';
+            document.getElementById('main-container').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('btn-com1').onclick = function() {
+                currentUser = localStorage.getItem('user') || null;
+                currentFilter = 'com1';
+                renderUserList(true);
+            };
+            document.getElementById('btn-com2').onclick = function() {
+                currentUser = localStorage.getItem('user') || null;
+                currentFilter = 'com2';
+                renderUserList(true);
+            };
+            document.getElementById('btn-prof').onclick = function() {
+                currentUser = localStorage.getItem('user') || null;
+                currentFilter = 'prof';
+                renderUserList(true);
+            };
+            document.getElementById('btn-conseil').onclick = function() {
+                currentUser = localStorage.getItem('user') || null;
+                currentFilter = 'conseil';
+                renderUserList(true);
+            };
+            document.getElementById('conversation-send-btn').onclick = sendConversationMessage;
+            document.getElementById('conversation-input').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendConversationMessage();
+            });
+            document.getElementById('back-to-home').onclick = backToHome;
+            renderUserList(true, true);
+            renderLoginArea();
+        });
+
+        window.addEventListener('focus', function() {
+            setTimeout(function() {
+                currentUser = localStorage.getItem('user') || null;
+                renderLoginArea();
+                renderUserList(true, true);
+            }, 100);
+        });
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'user') {
+                currentUser = localStorage.getItem('user') || null;
+                renderLoginArea();
+                renderUserList(true, true);
+            }
+        });
+    </script>
