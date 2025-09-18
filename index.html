@@ -249,7 +249,15 @@
         function sendConversationMessage() {
             const input = document.getElementById('conversation-input');
             const text = input.value.trim();
-            if (!text || !selectedUserId) return;
+            if (!text) return;
+            if (!currentUser) {
+                alert('Vous devez être connecté pour envoyer un message.');
+                return;
+            }
+            if (!selectedUserId) {
+                alert('Veuillez sélectionner un destinataire.');
+                return;
+            }
             const chatKey = [currentUser, selectedUserId].sort().join('-');
             const message = {
                 sender: currentUser,
@@ -261,6 +269,8 @@
             newMsgRef.set(message, function(error) {
                 if (!error) {
                     input.value = '';
+                } else {
+                    alert('Erreur lors de l\'envoi du message.');
                 }
             });
         }
