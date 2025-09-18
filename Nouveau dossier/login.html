@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Triple M</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1 class="site-title">Connexion à Triple M</h1>
+    <div class="login-container">
+        <form class="login-form" id="loginForm">
+            <label for="identifiant">Identifiant</label>
+            <input type="text" id="identifiant" name="identifiant" required>
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit" class="main-btn">Se connecter</button>
+        </form>
+    </div>
+    <script>
+        // Nettoie la session à l'ouverture de la popup
+        if (window.opener && !window.opener.closed) {
+            window.opener.localStorage.removeItem('user');
+        }
+        // Liste des utilisateurs et mots de passe
+        const users = [{
+            id: 'matheo.P',
+            name: 'Mathéo.P',
+            login: 'matheo.P',
+            password: 'saucisse456'
+        }, {
+            id: 'maxime.L',
+            name: 'Maxime.L',
+            login: 'maxime.L',
+            password: 'saucisse789'
+        }, {
+            id: 'clelia.D',
+            name: 'Clelia.D',
+            login: 'clelia.D',
+            password: 'saucisse123'
+        }, {
+            id: 'com1-1',
+            name: 'Alice',
+            login: 'alice',
+            password: 'passalice'
+        }, {
+            id: 'com1-2',
+            name: 'Bob',
+            login: 'bob',
+            password: 'passbob'
+        }, {
+            id: 'com2-1',
+            name: 'Charlie',
+            login: 'charlie',
+            password: 'passcharlie'
+        }, {
+            id: 'com2-2',
+            name: 'Diane',
+            login: 'diane',
+            password: 'passdiane'
+        }, {
+            id: 'prof-1',
+            name: 'Mme Martin',
+            login: 'martin',
+            password: 'passmartin'
+        }, {
+            id: 'prof-2',
+            name: 'M. Durand',
+            login: 'durand',
+            password: 'passdurand'
+        }, {
+            id: 'conseil-1',
+            name: 'Mme Dubois',
+            login: 'dubois',
+            password: 'passdubois'
+        }, {
+            id: 'conseil-2',
+            name: 'M. Leroy',
+            login: 'leroy',
+            password: 'passleroy'
+        }];
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const identifiant = document.getElementById('identifiant').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const user = users.find(u => u.login === identifiant && u.password === password);
+            if (user) {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.localStorage.setItem('user', user.id);
+                    window.opener.location.reload();
+                    window.close();
+                } else {
+                    alert("Erreur : ouvrez d'abord la page principale.");
+                }
+            } else {
+                alert('Identifiant ou mot de passe incorrect.');
+            }
+        });
+    </script>
+</body>
+
+</html>
