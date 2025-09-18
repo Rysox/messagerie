@@ -5,7 +5,7 @@
         apiKey: "AIzaSyAiod4GXLIcuHavAhW3tNPP7e_HGFUOLSg",
         authDomain: "messagerie-4d154.firebaseapp.com",
         projectId: "messagerie-4d154",
-        storageBucket: "messagerie-4d154.firebasestorage.app",
+        storageBucket: "messagerie-4d154.appspot.com", // Correction ici
         messagingSenderId: "419456922871",
         appId: "1:419456922871:web:c6d25a7dd059ee18a38ff2",
         measurementId: "G-JL7CGWD4KP"
@@ -281,23 +281,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // currentUser est défini une seule fois au chargement
+            currentUser = localStorage.getItem('user') || null;
             document.getElementById('btn-com1').onclick = function() {
-                currentUser = localStorage.getItem('user') || null;
                 currentFilter = 'com1';
                 renderUserList(true);
             };
             document.getElementById('btn-com2').onclick = function() {
-                currentUser = localStorage.getItem('user') || null;
                 currentFilter = 'com2';
                 renderUserList(true);
             };
             document.getElementById('btn-prof').onclick = function() {
-                currentUser = localStorage.getItem('user') || null;
                 currentFilter = 'prof';
                 renderUserList(true);
             };
             document.getElementById('btn-conseil').onclick = function() {
-                currentUser = localStorage.getItem('user') || null;
                 currentFilter = 'conseil';
                 renderUserList(true);
             };
