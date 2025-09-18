@@ -231,11 +231,15 @@
             renderConversationMessages();
         }
 
+        function sanitizeId(id) {
+            return id.replace(/[.#$\[\]]/g, '');
+        }
+
         function renderConversationMessages() {
             const messagesDiv = document.getElementById('conversation-messages');
             messagesDiv.innerHTML = '';
             if (!currentUser || !selectedUserId) return;
-            const chatKey = [currentUser, selectedUserId].sort().join('-');
+            const chatKey = [sanitizeId(currentUser), sanitizeId(selectedUserId)].sort().join('-');
             // Écoute en temps réel des messages depuis Firebase
             firebase.database().ref('messages/' + chatKey).off(); // retire les anciens listeners
             firebase.database().ref('messages/' + chatKey).on('value', function(snapshot) {
@@ -263,7 +267,7 @@
                 alert('Veuillez sélectionner un destinataire.');
                 return;
             }
-            const chatKey = [currentUser, selectedUserId].sort().join('-');
+            const chatKey = [sanitizeId(currentUser), sanitizeId(selectedUserId)].sort().join('-');
             const message = {
                 sender: currentUser,
                 text,
